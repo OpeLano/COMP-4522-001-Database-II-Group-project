@@ -1,3 +1,5 @@
+CREATE DATABASE  IF NOT EXISTS `wellness_clinic` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `wellness_clinic`;
 -- MySQL dump 10.13  Distrib 8.0.41, for Win64 (x86_64)
 --
 -- Host: localhost    Database: wellness_clinic
@@ -25,15 +27,15 @@ DROP TABLE IF EXISTS `appointments`;
 CREATE TABLE `appointments` (
   `appointment_id` int NOT NULL AUTO_INCREMENT,
   `patient_id` int NOT NULL,
-  `practitioner_id` int NOT NULL,
+  `practitioner_id` int DEFAULT NULL,
   `appointment_date` date NOT NULL,
   `appointment_type` varchar(45) NOT NULL,
   `status` varchar(45) NOT NULL,
   PRIMARY KEY (`appointment_id`),
   KEY `patient_id_idx` (`patient_id`),
   KEY `practioner_id_idx` (`practitioner_id`),
-  CONSTRAINT `patient_id` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`patient_id`),
-  CONSTRAINT `practitioner_id` FOREIGN KEY (`practitioner_id`) REFERENCES `practitioners` (`practitioner_id`)
+  CONSTRAINT `patient_id` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`patient_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `practitioner_id` FOREIGN KEY (`practitioner_id`) REFERENCES `practitioners` (`practitioner_id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -68,9 +70,9 @@ CREATE TABLE `billing` (
   KEY `patientsid_idx` (`patient_id`),
   KEY `appointmentid_idx` (`appointment_id`),
   KEY `prescriptionid_idx` (`prescription_id`),
-  CONSTRAINT `appointmentid` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`appointment_id`),
-  CONSTRAINT `patientsid` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`patient_id`),
-  CONSTRAINT `prescriptionid` FOREIGN KEY (`prescription_id`) REFERENCES `prescriptions` (`prescriptions_id`)
+  CONSTRAINT `billing_appointment_id` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`appointment_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `billing_patients_id` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`patient_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `billing_prescription_id` FOREIGN KEY (`prescription_id`) REFERENCES `prescriptions` (`prescriptions_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -92,7 +94,7 @@ DROP TABLE IF EXISTS `daily_schedules`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `daily_schedules` (
-  `practitioner_id` int NOT NULL,
+  `practitioner_id` int DEFAULT NULL,
   `patient_id` int DEFAULT NULL,
   `appointment_id` int DEFAULT NULL,
   `appointment_time` date NOT NULL,
@@ -102,9 +104,9 @@ CREATE TABLE `daily_schedules` (
   KEY `practitioner_id_idx` (`practitioner_id`),
   KEY `appointmentsid_idx` (`appointment_id`),
   KEY `patientid_idx` (`patient_id`),
-  CONSTRAINT `appointmentsid` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`appointment_id`),
-  CONSTRAINT `patientid4` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`patient_id`),
-  CONSTRAINT `practitionerid` FOREIGN KEY (`practitioner_id`) REFERENCES `practitioners` (`practitioner_id`)
+  CONSTRAINT `scheduled_appointments_id` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`appointment_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `scheduled_patient_id` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`patient_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `scheduled_practitioner_id` FOREIGN KEY (`practitioner_id`) REFERENCES `practitioners` (`practitioner_id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -134,8 +136,8 @@ CREATE TABLE `deliveries` (
   PRIMARY KEY (`deliveries_id`),
   KEY `patientsid3_idx` (`patient_id`),
   KEY `practiotioner_id2_idx` (`practitioner_id`),
-  CONSTRAINT `patientsid3` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`patient_id`),
-  CONSTRAINT `practitioner_id3` FOREIGN KEY (`practitioner_id`) REFERENCES `practitioners` (`practitioner_id`)
+  CONSTRAINT `delivery_patients_id` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`patient_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `delivery_practitioner_id` FOREIGN KEY (`practitioner_id`) REFERENCES `practitioners` (`practitioner_id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -169,9 +171,9 @@ CREATE TABLE `insurance_statements` (
   KEY `practitioners_id_idx` (`practitioners_id`),
   KEY `patientid4_idx` (`patient_id`),
   KEY `billing_id_idx` (`billing_id`),
-  CONSTRAINT `billing_id` FOREIGN KEY (`billing_id`) REFERENCES `billing` (`billing_id`),
-  CONSTRAINT `patientid5` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`patient_id`),
-  CONSTRAINT `practitioners_id` FOREIGN KEY (`practitioners_id`) REFERENCES `practitioners` (`practitioner_id`)
+  CONSTRAINT `insurance_patient_id` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`patient_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `insurance_practitioner_id` FOREIGN KEY (`practitioners_id`) REFERENCES `practitioners` (`practitioner_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `insurancestate_billing_id` FOREIGN KEY (`billing_id`) REFERENCES `billing` (`billing_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -200,7 +202,7 @@ CREATE TABLE `lab_tests` (
   `details` longtext NOT NULL,
   PRIMARY KEY (`test_id`),
   KEY `patientsid_idx` (`patient_id`),
-  CONSTRAINT `patientid2` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`patient_id`)
+  CONSTRAINT `lab_test_patient_id` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`patient_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -313,11 +315,11 @@ DROP TABLE IF EXISTS `practitioners`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `practitioners` (
   `practitioner_id` int NOT NULL AUTO_INCREMENT,
-  `staff_id` int NOT NULL,
+  `staff_id` int DEFAULT NULL,
   `specialization` varchar(45) NOT NULL,
   PRIMARY KEY (`practitioner_id`),
   KEY `staff_id_idx` (`staff_id`),
-  CONSTRAINT `staff_id` FOREIGN KEY (`staff_id`) REFERENCES `staff` (`staff_id`)
+  CONSTRAINT `practitioner_staff_id` FOREIGN KEY (`staff_id`) REFERENCES `staff` (`staff_id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -347,7 +349,7 @@ CREATE TABLE `prescriptions` (
   `prescription_refill` int NOT NULL,
   PRIMARY KEY (`prescriptions_id`),
   KEY `patient_id_idx` (`patient_id`),
-  CONSTRAINT `patientid` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`patient_id`)
+  CONSTRAINT `prescriptions_patient_id` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`patient_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -373,13 +375,13 @@ CREATE TABLE `recovery_logs` (
   `patient_id` int DEFAULT NULL,
   `addmission_time` date NOT NULL,
   `discharge_time` date NOT NULL,
-  `practitioner_id` int NOT NULL,
+  `practitioner_id` int DEFAULT NULL,
   `observations` longtext NOT NULL,
   PRIMARY KEY (`recovery_log_id`),
   KEY `patientid3_idx` (`patient_id`),
   KEY `practionionerid_idx` (`practitioner_id`),
-  CONSTRAINT `patientid3` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`patient_id`),
-  CONSTRAINT `practionionerid` FOREIGN KEY (`practitioner_id`) REFERENCES `practitioners` (`practitioner_id`)
+  CONSTRAINT `recoverylog_patient_id` FOREIGN KEY (`patient_id`) REFERENCES `patients` (`patient_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `recoverylog_practionioner_id` FOREIGN KEY (`practitioner_id`) REFERENCES `practitioners` (`practitioner_id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -435,7 +437,7 @@ CREATE TABLE `weekly_schedules` (
   `emergency_on_call_num` varchar(45) NOT NULL,
   PRIMARY KEY (`week_id`),
   KEY `practitioner_id2_idx` (`practitioner_id`),
-  CONSTRAINT `practitioner_id2` FOREIGN KEY (`practitioner_id`) REFERENCES `practitioners` (`practitioner_id`)
+  CONSTRAINT `weekly_scheduled_practitioner_id` FOREIGN KEY (`practitioner_id`) REFERENCES `practitioners` (`practitioner_id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -458,4 +460,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-03-28  0:36:16
+-- Dump completed on 2025-03-28 23:58:36
