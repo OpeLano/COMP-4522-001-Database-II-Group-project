@@ -1,7 +1,8 @@
-// app.js
+// App.js
 import React, { useState } from 'react';
-import Patients from './Patients';  // Your existing Patients component
-import PractitionersTab from './PractitionersTab';  // The new practitioners component
+import Patients from './Patients';
+import PractitionersTab from './PractitionersTab';
+import Appointments from './Appointments';
 
 function App() {
   // State to track the active tab
@@ -11,7 +12,7 @@ function App() {
     <div style={{ padding: '20px' }}>
       <h1>Wellness Clinic Dashboard</h1>
       
-      {/* Navigation buttons */}
+      {/* Navigation */}
       <nav style={{ marginBottom: '20px' }}>
         <button 
           onClick={() => setActiveTab('patients')}
@@ -21,15 +22,22 @@ function App() {
         </button>
         <button 
           onClick={() => setActiveTab('practitioners')}
-          style={{ padding: '10px', backgroundColor: activeTab === 'practitioners' ? '#ddd' : '#fff' }}
+          style={{ marginRight: '10px', padding: '10px', backgroundColor: activeTab === 'practitioners' ? '#ddd' : '#fff' }}
         >
           Practitioners
         </button>
+        <button 
+          onClick={() => setActiveTab('appointments')}
+          style={{ padding: '10px', backgroundColor: activeTab === 'appointments' ? '#ddd' : '#fff' }}
+        >
+          Appointments
+        </button>
       </nav>
       
-      {/* Conditional rendering based on active tab */}
+      {/* Conditional Rendering Based on Active Tab */}
       {activeTab === 'patients' && <Patients />}
       {activeTab === 'practitioners' && <PractitionersTab />}
+      {activeTab === 'appointments' && <Appointments />}
     </div>
   );
 }
