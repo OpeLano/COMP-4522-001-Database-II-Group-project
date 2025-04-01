@@ -5,6 +5,7 @@ import PractitionersTab from './PractitionersTab';
 import Appointments from './Appointments';
 import Staff from './Staff';
 import Schedules from './Schedules';
+import Reports from './Reports';
 
 function App() {
   // State to track the active tab
@@ -43,6 +44,9 @@ function App() {
         <button onClick={() => setActiveTab('schedules')}>
           Schedules
         </button>
+        <button onClick={() => setActiveTab('reports')}>
+          Reports
+        </button>
       </nav>
       
       {/* Conditional Rendering Based on Active Tab */}
@@ -51,6 +55,7 @@ function App() {
       {activeTab === 'appointments' && <Appointments />}
       {activeTab === 'staff' && <Staff />}
       {activeTab === 'schedules' && <Schedules />}
+      {activeTab === 'reports' && <Reports />}
     </div>
   );
 }
