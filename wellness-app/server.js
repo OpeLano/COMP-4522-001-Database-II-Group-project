@@ -80,6 +80,99 @@ app.delete('/api/patients/:id', (req, res) => {
   });
 });
 
+// ====== CRUD ROUTES FOR "PRACTITIONERS" ======
+
+// 1) READ all practitioners (join practitioners and staff tables)
+app.get('/api/practitioners', (req, res) => {
+  const sql = `
+    SELECT p.practitioner_id, p.staff_id, s.first_name, s.last_name, s.role, p.specialization, s.phone_num, s.email
+    FROM practitioners p
+    JOIN staff s ON p.staff_id = s.staff_id;
+  `;
+  db.query(sql, (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    return res.json(results);
+  });
+});
+
+// 2) CREATE a new practitioner (insert into staff then practitioners)
+app.post('/api/practitioners', (req, res) => {
+  const { first_name, last_name, role, phone_num, email, specialization } = req.body;
+  const staffSql = `
+    INSERT INTO staff (first_name, last_name, role, phone_num, email)
+    VALUES (?, ?, ?, ?, ?)
+  `;
+  db.query(staffSql, [first_name, last_name, role, phone_num, email], (err, staffResult) => {
+    if (err) return res.status(500).json({ error: err.message });
+    const staff_id = staffResult.insertId;
+    const practSql = `
+      INSERT INTO practitioners (staff_id, specialization)
+      VALUES (?, ?)
+    `;
+    db.query(practSql, [staff_id, specialization], (err, practResult) => {
+      if (err) return res.status(500).json({ error: err.message });
+      return res.json({ 
+        message: 'Practitioner added', 
+        practitioner_id: practResult.insertId, 
+        staff_id, 
+        first_name, 
+        last_name, 
+        role, 
+        phone_num, 
+        email, 
+        specialization 
+      });
+    });
+  });
+});
+
+// 3) UPDATE an existing practitioner (update both staff and practitioners)
+app.put('/api/practitioners/:id', (req, res) => {
+  const { id } = req.params;
+  const { staff_id, first_name, last_name, role, phone_num, email, specialization } = req.body;
+  const staffSql = `
+    UPDATE staff
+    SET first_name = ?, last_name = ?, role = ?, phone_num = ?, email = ?
+    WHERE staff_id = ?
+  `;
+  db.query(staffSql, [first_name, last_name, role, phone_num, email, staff_id], (err, staffResult) => {
+    if (err) return res.status(500).json({ error: err.message });
+    const practSql = `
+      UPDATE practitioners
+      SET specialization = ?
+      WHERE practitioner_id = ?
+    `;
+    db.query(practSql, [specialization, id], (err, practResult) => {
+      if (err) return res.status(500).json({ error: err.message });
+      return res.json({ message: 'Practitioner updated' });
+    });
+  });
+});
+
+// 4) DELETE a practitioner (delete from practitioners then from staff)
+app.delete('/api/practitioners/:id', (req, res) => {
+  const { id } = req.params;
+  // First, retrieve the staff_id for the given practitioner
+  const findSql = `SELECT staff_id FROM practitioners WHERE practitioner_id = ?`;
+  db.query(findSql, [id], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (results.length === 0) return res.status(404).json({ error: 'Practitioner not found' });
+    const staff_id = results[0].staff_id;
+    // Delete the practitioner record
+    const deletePractSql = `DELETE FROM practitioners WHERE practitioner_id = ?`;
+    db.query(deletePractSql, [id], (err, deleteResult) => {
+      if (err) return res.status(500).json({ error: err.message });
+      // Optionally, delete the associated staff record
+      const deleteStaffSql = `DELETE FROM staff WHERE staff_id = ?`;
+      db.query(deleteStaffSql, [staff_id], (err, staffDeleteResult) => {
+        if (err) console.error('Error deleting from staff table:', err);
+        return res.json({ message: 'Practitioner deleted successfully' });
+      });
+    });
+  });
+});
+
+
 // Start the server
 const PORT = 5000;
 app.listen(PORT, () => {
