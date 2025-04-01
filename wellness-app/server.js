@@ -299,6 +299,121 @@ app.delete('/api/appointments/:id', (req, res) => {
   });
 });
 
+// =======================
+// STAFF ROUTES (updated to include category)
+// =======================
+
+// GET all staff members
+app.get('/api/staff', (req, res) => {
+  const sql = 'SELECT * FROM staff';
+  db.query(sql, (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    return res.json(results);
+  });
+});
+
+// CREATE a new staff member
+app.post('/api/staff', (req, res) => {
+  const { first_name, last_name, role, phone_num, email, category } = req.body;
+  const sql = `INSERT INTO staff (first_name, last_name, role, phone_num, email, category)
+               VALUES (?, ?, ?, ?, ?, ?)`;
+  db.query(sql, [first_name, last_name, role, phone_num, email, category], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    return res.json({ message: 'Staff member added', insertedId: result.insertId });
+  });
+});
+
+// UPDATE an existing staff member
+app.put('/api/staff/:id', (req, res) => {
+  const { id } = req.params;
+  const { first_name, last_name, role, phone_num, email, category } = req.body;
+  const sql = `UPDATE staff SET first_name = ?, last_name = ?, role = ?, phone_num = ?, email = ?, category = ?
+               WHERE staff_id = ?`;
+  db.query(sql, [first_name, last_name, role, phone_num, email, category, id], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Staff member not found' });
+    return res.json({ message: 'Staff member updated' });
+  });
+});
+
+// DELETE a staff member
+app.delete('/api/staff/:id', (req, res) => {
+  const { id } = req.params;
+  const sql = 'DELETE FROM staff WHERE staff_id = ?';
+  db.query(sql, [id], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Staff member not found' });
+    return res.json({ message: 'Staff member deleted' });
+  });
+});
+
+// =======================
+// SCHEDULES ROUTES
+// =======================
+
+// Daily Master Schedule: appointments for a specific day
+app.get('/api/schedules/daily', (req, res) => {
+  const { date } = req.query;
+  const sql = `
+    SELECT 
+      a.appointment_id, 
+      CONCAT(pt.first_name, ' ', pt.last_name) AS patient_name,
+      CONCAT(st.first_name, ' ', st.last_name) AS practitioner_name,
+      a.appointment_date, 
+      a.appointment_type, 
+      a.status
+    FROM appointments a
+    JOIN Patients pt ON a.patient_id = pt.patient_id
+    LEFT JOIN practitioners pr ON a.practitioner_id = pr.practitioner_id
+    LEFT JOIN staff st ON pr.staff_id = st.staff_id
+    WHERE DATE(a.appointment_date) = ?
+  `;
+  db.query(sql, [date], (err, results) => {
+    if(err) return res.status(500).json({ error: err.message });
+    return res.json(results);
+  });
+});
+
+// Individual Practitioner Schedule: appointments for a specific practitioner on a specific day
+app.get('/api/schedules/individual', (req, res) => {
+  const { date, practitioner_id } = req.query;
+  const sql = `
+    SELECT 
+      a.appointment_id, 
+      CONCAT(pt.first_name, ' ', pt.last_name) AS patient_name,
+      CONCAT(st.first_name, ' ', st.last_name) AS practitioner_name,
+      a.appointment_date, 
+      a.appointment_type, 
+      a.status
+    FROM appointments a
+    JOIN Patients pt ON a.patient_id = pt.patient_id
+    LEFT JOIN practitioners pr ON a.practitioner_id = pr.practitioner_id
+    LEFT JOIN staff st ON pr.staff_id = st.staff_id
+    WHERE DATE(a.appointment_date) = ? AND pr.practitioner_id = ?
+  `;
+  db.query(sql, [date, practitioner_id], (err, results) => {
+    if(err) return res.status(500).json({ error: err.message });
+    return res.json(results);
+  });
+});
+
+// Weekly Coverage Schedule: a placeholder endpoint based on a provided week start date
+app.get('/api/schedules/weekly', (req, res) => {
+  const { weekStart } = req.query; // weekStart is expected as the Monday of the week
+  const sql = `
+    SELECT 
+      s.staff_id, s.first_name, s.last_name, s.role, s.category,
+      a.appointment_date
+    FROM staff s
+    LEFT JOIN appointments a ON s.staff_id = a.practitioner_id
+    WHERE WEEK(a.appointment_date, 1) = WEEK(?, 1)
+  `;
+  db.query(sql, [weekStart], (err, results) => {
+    if(err) return res.status(500).json({ error: err.message });
+    return res.json(results);
+  });
+});
+
 
 // =======================
 // START THE SERVER
