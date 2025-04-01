@@ -19,7 +19,7 @@ function Patients() {
   }, []);
 
   const fetchPatients = () => {
-    fetch('http://localhost:5000/api/patients')
+    fetch('http://localhost:3000/api/patients')
       .then(response => response.json())
       .then(data => setPatients(data))
       .catch(error => console.error('Error fetching patients:', error));
@@ -39,7 +39,7 @@ function Patients() {
 
     if (editing) {
       // UPDATE existing patient
-      fetch(`http://localhost:5000/api/patients/${formData.patient_id}`, {
+      fetch(`http://localhost:3000/api/patients/${formData.patient_id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -60,7 +60,7 @@ function Patients() {
       .catch(error => console.error('Error updating patient:', error));
     } else {
       // CREATE new patient
-      fetch('http://localhost:5000/api/patients', {
+      fetch('http://localhost:3000/api/patients', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -109,7 +109,7 @@ function Patients() {
   const handleDelete = (patientId) => {
     if (!window.confirm('Are you sure you want to delete this patient?')) return;
 
-    fetch(`http://localhost:5000/api/patients/${patientId}`, {
+    fetch(`http://localhost:3000/api/patients/${patientId}`, {
       method: 'DELETE'
     })
     .then(response => response.json())

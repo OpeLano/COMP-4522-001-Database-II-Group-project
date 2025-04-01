@@ -15,7 +15,7 @@ function PractitionersTab() {
   });
   const [editing, setEditing] = useState(false);
 
-  const baseUrl = 'http://localhost:5000/api/practitioners';
+  const baseUrl = 'http://localhost:3000/api/practitioners';
 
   // Fetch practitioners on component mount
   useEffect(() => {
