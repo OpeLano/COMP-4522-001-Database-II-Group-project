@@ -134,7 +134,7 @@ function Appointments() {
   return (
     <div style={{ padding: '20px' }}>
       <h1>Appointments</h1>
-      
+
       {/* Appointment Listing */}
       <h2>All Appointments</h2>
       {appointments.length > 0 ? (
@@ -172,9 +172,9 @@ function Appointments() {
       ) : (
         <p>No appointments found.</p>
       )}
-      
+
       <hr />
-      
+
       {/* Appointment Form */}
       <h2>{editing ? 'Edit Appointment' : 'Add New Appointment'}</h2>
       <form onSubmit={handleSubmit}>
@@ -241,13 +241,16 @@ function Appointments() {
         </div>
         <div>
           <label>Appointment Type:</label>
-          <input
-            type="text"
+          <select
             name="appointment_type"
             value={formData.appointment_type}
             onChange={handleChange}
             required
-          />
+          >
+            <option value="">--Select--</option>
+            <option value="scheduled">Scheduled</option>
+            <option value="walk-in">Walk-In</option>
+          </select>
         </div>
         <div>
           <label>Status:</label>

@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import Patients from './Patients';
 import PractitionersTab from './PractitionersTab';
 import Appointments from './Appointments';
+import Staff from './Staff';
+import Schedules from './Schedules';
 
 function App() {
   // State to track the active tab
@@ -31,6 +33,15 @@ function App() {
           style={{ padding: '10px', backgroundColor: activeTab === 'appointments' ? '#ddd' : '#fff' }}
         >
           Appointments
+          </button>
+        <button 
+          onClick={() => setActiveTab('staff')}
+          style={{ marginRight: '10px' }}
+        >
+          Staff
+        </button>
+        <button onClick={() => setActiveTab('schedules')}>
+          Schedules
         </button>
       </nav>
       
@@ -38,6 +49,8 @@ function App() {
       {activeTab === 'patients' && <Patients />}
       {activeTab === 'practitioners' && <PractitionersTab />}
       {activeTab === 'appointments' && <Appointments />}
+      {activeTab === 'staff' && <Staff />}
+      {activeTab === 'schedules' && <Schedules />}
     </div>
   );
 }
