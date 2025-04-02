@@ -415,37 +415,34 @@ app.get('/api/schedules/weekly', (req, res) => {
 });
 
 // 1. Physician Statement for Insurance Forms
-app.get('/api/reports/physician-statement', (req, res) => {
-  const { statement_id } = req.query;
-  if (!statement_id) {
-    return res.status(400).json({ error: 'Missing statement_id parameter' });
-  }
-  const sql = 'SELECT * FROM insurance_statements WHERE statement_id = ?';
-  db.query(sql, [statement_id], (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (results.length === 0) return res.status(404).json({ error: 'Statement not found' });
-    return res.json(results[0]);
+app.get('/api/reports/physician-statements', (req, res) => {
+  const sql = 'SELECT * FROM insurance_statements';
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error("Error fetching physician statements:", err);
+      return res.status(500).json({ error: err.message });
+    }
+    return res.json(results);
   });
 });
 
+
 // 2. Prescription Label & Receipt
-app.get('/api/reports/prescription', (req, res) => {
-  const { prescription_id } = req.query;
-  if (!prescription_id) {
-    return res.status(400).json({ error: 'Missing prescription_id parameter' });
-  }
-  // Join prescriptions with billing details (if available)
+app.get('/api/reports/prescriptions', (req, res) => {
   const sql = `
     SELECT p.*, b.total_amount, b.amount_due, b.balance_due, b.payment_method, b.billing_date 
     FROM prescriptions p
     LEFT JOIN billing b ON p.prescriptions_id = b.prescription_id
-    WHERE p.prescriptions_id = ?`;
-  db.query(sql, [prescription_id], (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (results.length === 0) return res.status(404).json({ error: 'Prescription not found' });
-    return res.json(results[0]);
+  `;
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error("Error fetching prescriptions:", err);
+      return res.status(500).json({ error: err.message });
+    }
+    return res.json(results);
   });
 });
+
 
 // 3. Daily Laboratory Log
 app.get('/api/reports/daily-lab-log', (req, res) => {

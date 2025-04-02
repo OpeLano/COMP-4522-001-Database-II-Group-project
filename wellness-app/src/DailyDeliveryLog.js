@@ -1,16 +1,24 @@
 // DailyDeliveryLog.js
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 function DailyDeliveryLog() {
   const [logDate, setLogDate] = useState('');
   const [deliveryLogs, setDeliveryLogs] = useState([]);
 
-  const handleFetch = () => {
-    fetch(`http://localhost:3000/api/reports/daily-delivery-log?date=${logDate}`)
+  const fetchDeliveryLogs = (date) => {
+    let url = 'http://localhost:3000/api/reports/daily-delivery-log';
+    if (date) {
+      url += `?date=${date}`;
+    }
+    fetch(url)
       .then(response => response.json())
       .then(data => setDeliveryLogs(data))
-      .catch(error => console.error('Error fetching daily delivery log:', error));
+      .catch(error => console.error('Error fetching delivery logs:', error));
   };
+
+  useEffect(() => {
+    fetchDeliveryLogs('');
+  }, []);
 
   return (
     <div style={{ padding: '20px' }}>
@@ -22,7 +30,7 @@ function DailyDeliveryLog() {
           value={logDate} 
           onChange={e => setLogDate(e.target.value)} 
         />
-        <button onClick={handleFetch}>Fetch Log</button>
+        <button onClick={() => fetchDeliveryLogs(logDate)}>Fetch Logs</button>
       </div>
       {deliveryLogs.length > 0 ? (
         <table border="1" cellPadding="8" cellSpacing="0" style={{ marginTop: '20px' }}>
@@ -48,7 +56,7 @@ function DailyDeliveryLog() {
           </tbody>
         </table>
       ) : (
-        <p>No delivery logs available for this date.</p>
+        <p>No delivery logs available.</p>
       )}
     </div>
   );

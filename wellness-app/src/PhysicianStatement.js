@@ -1,40 +1,50 @@
 // PhysicianStatement.js
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 function PhysicianStatement() {
-  const [statementId, setStatementId] = useState('');
-  const [statement, setStatement] = useState(null);
+  const [statements, setStatements] = useState([]);
 
-  const handleFetch = () => {
-    fetch(`http://localhost:3000/api/reports/physician-statement?statement_id=${statementId}`)
+  useEffect(() => {
+    fetch('http://localhost:3000/api/reports/physician-statements')
       .then(response => response.json())
-      .then(data => setStatement(data))
-      .catch(error => console.error('Error fetching physician statement:', error));
-  };
+      .then(data => setStatements(data))
+      .catch(error => console.error('Error fetching physician statements:', error));
+  }, []);
 
   return (
     <div style={{ padding: '20px' }}>
-      <h1>Physician Statement for Insurance Forms</h1>
-      <div>
-        <label>Statement ID: </label>
-        <input 
-          type="text" 
-          value={statementId} 
-          onChange={e => setStatementId(e.target.value)} 
-        />
-        <button onClick={handleFetch}>Generate Statement</button>
-      </div>
-      {statement && (
-        <div style={{ marginTop: '20px', border: '1px solid #ccc', padding: '10px' }}>
-          <h2>Statement Details</h2>
-          <p><strong>Practitioner ID:</strong> {statement.practitioners_id}</p>
-          <p><strong>Patient ID:</strong> {statement.patient_id}</p>
-          <p><strong>Appointment Type:</strong> {statement.appointment_type}</p>
-          <p><strong>Procedures:</strong> {statement.procedures}</p>
-          <p><strong>Diagnosis:</strong> {statement.diagnosis}</p>
-          <p><strong>Billing ID:</strong> {statement.billing_id}</p>
-          <p><strong>Total Amount:</strong> {statement.total_amount}</p>
-        </div>
+      <h1>Physician Statements for Insurance Forms</h1>
+      {statements.length > 0 ? (
+        <table border="1" cellPadding="8" cellSpacing="0">
+          <thead>
+            <tr>
+              <th>Statement ID</th>
+              <th>Practitioner ID</th>
+              <th>Patient ID</th>
+              <th>Appointment Type</th>
+              <th>Procedures</th>
+              <th>Diagnosis</th>
+              <th>Billing ID</th>
+              <th>Total Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {statements.map(s => (
+              <tr key={s.statement_id}>
+                <td>{s.statement_id}</td>
+                <td>{s.practitioners_id}</td>
+                <td>{s.patient_id}</td>
+                <td>{s.appointment_type}</td>
+                <td>{s.procedures}</td>
+                <td>{s.diagnosis}</td>
+                <td>{s.billing_id}</td>
+                <td>{s.total_amount}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p>No physician statements available.</p>
       )}
     </div>
   );

@@ -8,7 +8,6 @@ function PractitionersTab() {
     staff_id: '',
     first_name: '',
     last_name: '',
-    role: '',
     specialization: '',
     phone_num: '',
     email: ''
@@ -55,7 +54,6 @@ function PractitionersTab() {
           staff_id: formData.staff_id,
           first_name: formData.first_name,
           last_name: formData.last_name,
-          role: formData.role,
           phone_num: formData.phone_num,
           email: formData.email,
           specialization: formData.specialization
@@ -82,7 +80,6 @@ function PractitionersTab() {
         body: JSON.stringify({
           first_name: formData.first_name,
           last_name: formData.last_name,
-          role: formData.role,
           phone_num: formData.phone_num,
           email: formData.email,
           specialization: formData.specialization
@@ -110,7 +107,6 @@ function PractitionersTab() {
       staff_id: '',
       first_name: '',
       last_name: '',
-      role: '',
       specialization: '',
       phone_num: '',
       email: ''
@@ -125,7 +121,6 @@ function PractitionersTab() {
       staff_id: practitioner.staff_id,
       first_name: practitioner.first_name,
       last_name: practitioner.last_name,
-      role: practitioner.role,
       specialization: practitioner.specialization,
       phone_num: practitioner.phone_num,
       email: practitioner.email
@@ -165,7 +160,6 @@ function PractitionersTab() {
               <th>Staff ID</th>
               <th>First Name</th>
               <th>Last Name</th>
-              <th>Role</th>
               <th>Specialization</th>
               <th>Phone</th>
               <th>Email</th>
@@ -179,7 +173,6 @@ function PractitionersTab() {
                 <td>{p.staff_id}</td>
                 <td>{p.first_name}</td>
                 <td>{p.last_name}</td>
-                <td>{p.role}</td>
                 <td>{p.specialization}</td>
                 <td>{p.phone_num}</td>
                 <td>{p.email}</td>
@@ -230,17 +223,6 @@ function PractitionersTab() {
             name="last_name"
             value={formData.last_name}
             onChange={handleChange}
-            required
-          />
-        </div>
-        <div>
-          <label>Role:</label>
-          <input
-            type="text"
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
-            placeholder="e.g., Physician, Nurse Practitioner"
             required
           />
         </div>

@@ -1,16 +1,24 @@
 // MonthlyActivityReport.js
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 function MonthlyActivityReport() {
   const [month, setMonth] = useState('');
   const [report, setReport] = useState(null);
 
-  const handleFetch = () => {
-    fetch(`http://localhost:3000/api/reports/monthly-activity?month=${month}`)
+  const fetchReport = (monthValue) => {
+    let url = 'http://localhost:3000/api/reports/monthly-activity';
+    if (monthValue) {
+      url += `?month=${monthValue}`;
+    }
+    fetch(url)
       .then(response => response.json())
       .then(data => setReport(data))
-      .catch(error => console.error('Error fetching monthly activity report:', error));
+      .catch(error => console.error('Error fetching monthly report:', error));
   };
+
+  useEffect(() => {
+    fetchReport('');
+  }, []);
 
   return (
     <div style={{ padding: '20px' }}>
@@ -22,11 +30,11 @@ function MonthlyActivityReport() {
           value={month} 
           onChange={e => setMonth(e.target.value)} 
         />
-        <button onClick={handleFetch}>Generate Report</button>
+        <button onClick={() => fetchReport(month)}>Generate Report</button>
       </div>
-      {report && (
+      {report ? (
         <div style={{ marginTop: '20px', border: '1px solid #ccc', padding: '10px' }}>
-          <h2>Activity Summary for {month}</h2>
+          <h2>Activity Summary for {month || 'All Months'}</h2>
           <p><strong>Total Patient Visits:</strong> {report.total_patients_visits}</p>
           <p><strong>Total Surgeries:</strong> {report.total_surgeries}</p>
           <p><strong>Total Deliveries:</strong> {report.total_deliveries}</p>
@@ -34,6 +42,8 @@ function MonthlyActivityReport() {
           <p><strong>Total Prescriptions:</strong> {report.total_perscriptions}</p>
           <p><strong>Average Visit Duration:</strong> {report.avg_visit_duration} minutes</p>
         </div>
+      ) : (
+        <p>No monthly report available.</p>
       )}
     </div>
   );

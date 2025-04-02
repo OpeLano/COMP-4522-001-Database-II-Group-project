@@ -1,16 +1,24 @@
 // RecoveryRoomLog.js
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 function RecoveryRoomLog() {
   const [logDate, setLogDate] = useState('');
   const [recoveryLogs, setRecoveryLogs] = useState([]);
 
-  const handleFetch = () => {
-    fetch(`http://localhost:3000/api/reports/recovery-room-log?date=${logDate}`)
+  const fetchRecoveryLogs = (date) => {
+    let url = 'http://localhost:3000/api/reports/recovery-room-log';
+    if (date) {
+      url += `?date=${date}`;
+    }
+    fetch(url)
       .then(response => response.json())
       .then(data => setRecoveryLogs(data))
-      .catch(error => console.error('Error fetching recovery room log:', error));
+      .catch(error => console.error('Error fetching recovery logs:', error));
   };
+
+  useEffect(() => {
+    fetchRecoveryLogs('');
+  }, []);
 
   return (
     <div style={{ padding: '20px' }}>
@@ -22,7 +30,7 @@ function RecoveryRoomLog() {
           value={logDate} 
           onChange={e => setLogDate(e.target.value)} 
         />
-        <button onClick={handleFetch}>Fetch Log</button>
+        <button onClick={() => fetchRecoveryLogs(logDate)}>Fetch Logs</button>
       </div>
       {recoveryLogs.length > 0 ? (
         <table border="1" cellPadding="8" cellSpacing="0" style={{ marginTop: '20px' }}>
@@ -50,7 +58,7 @@ function RecoveryRoomLog() {
           </tbody>
         </table>
       ) : (
-        <p>No recovery logs available for this date.</p>
+        <p>No recovery logs available.</p>
       )}
     </div>
   );

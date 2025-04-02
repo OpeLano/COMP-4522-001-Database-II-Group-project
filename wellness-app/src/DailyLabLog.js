@@ -1,16 +1,24 @@
 // DailyLabLog.js
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 function DailyLabLog() {
   const [logDate, setLogDate] = useState('');
   const [labLogs, setLabLogs] = useState([]);
 
-  const handleFetch = () => {
-    fetch(`http://localhost:3000/api/reports/daily-lab-log?date=${logDate}`)
+  const fetchLabLogs = (date) => {
+    let url = 'http://localhost:3000/api/reports/daily-lab-log';
+    if (date) {
+      url += `?date=${date}`;
+    }
+    fetch(url)
       .then(response => response.json())
       .then(data => setLabLogs(data))
-      .catch(error => console.error('Error fetching daily lab log:', error));
+      .catch(error => console.error('Error fetching lab logs:', error));
   };
+
+  useEffect(() => {
+    fetchLabLogs('');
+  }, []);
 
   return (
     <div style={{ padding: '20px' }}>
@@ -22,7 +30,7 @@ function DailyLabLog() {
           value={logDate} 
           onChange={e => setLogDate(e.target.value)} 
         />
-        <button onClick={handleFetch}>Fetch Log</button>
+        <button onClick={() => fetchLabLogs(logDate)}>Fetch Logs</button>
       </div>
       {labLogs.length > 0 ? (
         <table border="1" cellPadding="8" cellSpacing="0" style={{ marginTop: '20px' }}>
@@ -48,7 +56,7 @@ function DailyLabLog() {
           </tbody>
         </table>
       ) : (
-        <p>No lab logs available for this date.</p>
+        <p>No lab logs available.</p>
       )}
     </div>
   );
