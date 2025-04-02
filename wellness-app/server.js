@@ -414,11 +414,98 @@ app.get('/api/schedules/weekly', (req, res) => {
   });
 });
 
+// 1. Physician Statement for Insurance Forms
+app.get('/api/reports/physician-statement', (req, res) => {
+  const { statement_id } = req.query;
+  if (!statement_id) {
+    return res.status(400).json({ error: 'Missing statement_id parameter' });
+  }
+  const sql = 'SELECT * FROM insurance_statements WHERE statement_id = ?';
+  db.query(sql, [statement_id], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (results.length === 0) return res.status(404).json({ error: 'Statement not found' });
+    return res.json(results[0]);
+  });
+});
 
-// =======================
-// START THE SERVER
-// =======================
-const PORT = 3000;  // Change as needed if you run both front end and API on same port
+// 2. Prescription Label & Receipt
+app.get('/api/reports/prescription', (req, res) => {
+  const { prescription_id } = req.query;
+  if (!prescription_id) {
+    return res.status(400).json({ error: 'Missing prescription_id parameter' });
+  }
+  // Join prescriptions with billing details (if available)
+  const sql = `
+    SELECT p.*, b.total_amount, b.amount_due, b.balance_due, b.payment_method, b.billing_date 
+    FROM prescriptions p
+    LEFT JOIN billing b ON p.prescriptions_id = b.prescription_id
+    WHERE p.prescriptions_id = ?`;
+  db.query(sql, [prescription_id], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (results.length === 0) return res.status(404).json({ error: 'Prescription not found' });
+    return res.json(results[0]);
+  });
+});
+
+// 3. Daily Laboratory Log
+app.get('/api/reports/daily-lab-log', (req, res) => {
+  const { date } = req.query;
+  if (!date) {
+    return res.status(400).json({ error: 'Missing date parameter' });
+  }
+  const sql = 'SELECT * FROM lab_tests WHERE test_date = ?';
+  db.query(sql, [date], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    return res.json(results);
+  });
+});
+
+// 4. Daily Delivery Log
+app.get('/api/reports/daily-delivery-log', (req, res) => {
+  const { date } = req.query;
+  if (!date) {
+    return res.status(400).json({ error: 'Missing date parameter' });
+  }
+  const sql = 'SELECT * FROM deliveries WHERE delivery_date = ?';
+  db.query(sql, [date], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    return res.json(results);
+  });
+});
+
+// 5. Recovery Room Log
+app.get('/api/reports/recovery-room-log', (req, res) => {
+  const { date } = req.query;
+  if (!date) {
+    return res.status(400).json({ error: 'Missing date parameter' });
+  }
+  // Filtering based on the addmission_time; adjust as needed
+  const sql = 'SELECT * FROM recovery_logs WHERE addmission_time = ?';
+  db.query(sql, [date], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    return res.json(results);
+  });
+});
+
+// 6. Monthly Activity Report
+app.get('/api/reports/monthly-activity', (req, res) => {
+  const { month } = req.query; // expected format: YYYY-MM
+  if (!month) {
+    return res.status(400).json({ error: 'Missing month parameter' });
+  }
+  // Compare the month portion of the stored date with the provided value
+  const sql = "SELECT * FROM monthly_reports WHERE DATE_FORMAT(month, '%Y-%m') = ?";
+  db.query(sql, [month], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (results.length === 0) return res.status(404).json({ error: 'Report not found' });
+    return res.json(results[0]);
+  });
+});
+
+// ------------------------------------------------
+// Start the Server
+// ------------------------------------------------
+const PORT = 3000; // Adjust as needed
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
