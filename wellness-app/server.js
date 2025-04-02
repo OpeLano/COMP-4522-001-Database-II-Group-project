@@ -416,15 +416,31 @@ app.get('/api/schedules/weekly', (req, res) => {
 
 // 1. Physician Statement for Insurance Forms
 app.get('/api/reports/physician-statements', (req, res) => {
-  const sql = 'SELECT * FROM insurance_statements';
+  const sql = `
+    SELECT
+      i.statement_id,
+      CONCAT(st.first_name, ' ', st.last_name) AS practitioner_name,
+      CONCAT(pt.first_name, ' ', pt.last_name) AS patient_name,
+      i.appointment_type,
+      i.procedures,
+      i.diagnosis,
+      i.billing_id,
+      i.total_amount
+    FROM insurance_statements i
+    LEFT JOIN practitioners p ON i.practitioners_id = p.practitioner_id
+    LEFT JOIN staff st ON p.staff_id = st.staff_id
+    LEFT JOIN patients pt ON i.patient_id = pt.patient_id
+  `;
+  
   db.query(sql, (err, results) => {
     if (err) {
-      console.error("Error fetching physician statements:", err);
+      console.error('Error fetching physician statements:', err);
       return res.status(500).json({ error: err.message });
     }
     return res.json(results);
   });
 });
+
 
 
 // 2. Prescription Label & Receipt

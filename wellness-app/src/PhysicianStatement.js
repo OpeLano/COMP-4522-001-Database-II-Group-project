@@ -15,12 +15,12 @@ function PhysicianStatement() {
     <div style={{ padding: '20px' }}>
       <h1>Physician Statements for Insurance Forms</h1>
       {statements.length > 0 ? (
-        <table align="center" border="1" cellPadding="8" cellSpacing="0">
+        <table border="1" cellPadding="8" cellSpacing="0">
           <thead>
             <tr>
               <th>Statement ID</th>
-              <th>Practitioner ID</th>
-              <th>Patient ID</th>
+              <th>Practitioner Name</th>
+              <th>Patient Name</th>
               <th>Appointment Type</th>
               <th>Procedures</th>
               <th>Diagnosis</th>
@@ -32,8 +32,8 @@ function PhysicianStatement() {
             {statements.map(s => (
               <tr key={s.statement_id}>
                 <td>{s.statement_id}</td>
-                <td>{s.practitioners_id}</td>
-                <td>{s.patient_id}</td>
+                <td>{s.practitioner_name}</td>
+                <td>{s.patient_name}</td>
                 <td>{s.appointment_type}</td>
                 <td>{s.procedures}</td>
                 <td>{s.diagnosis}</td>
