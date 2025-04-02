@@ -127,7 +127,7 @@ function Patients() {
       {/* Patient Listing */}
       <h2>All Patients</h2>
       {patients.length > 0 ? (
-        <table border="1" cellPadding="8" cellSpacing="0">
+        <table align="center" border="1" cellPadding="8" cellSpacing="0">
           <thead>
             <tr>
               <th>ID</th>

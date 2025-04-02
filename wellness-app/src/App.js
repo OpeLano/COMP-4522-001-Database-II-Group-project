@@ -6,6 +6,7 @@ import Appointments from './Appointments';
 import Staff from './Staff';
 import Schedules from './Schedules';
 import Reports from './Reports';
+import Home from './Home';
 
 function App() {
   // State to track the active tab
@@ -14,30 +15,33 @@ function App() {
   return (
     <div style={{ padding: '20px' }}>
       <h1>Wellness Clinic Dashboard</h1>
-      
+
       {/* Navigation */}
       <nav style={{ marginBottom: '20px' }}>
-        <button 
+        <button onClick={() => setActiveTab('home')} style={{ marginRight: '10px' }}>
+          Home
+        </button>
+        <button
           onClick={() => setActiveTab('patients')}
-          style={{ marginRight: '10px', padding: '10px', backgroundColor: activeTab === 'patients' ? '#ddd' : '#fff' }}
+        // style={{ marginRight: '10px', padding: '10px', backgroundColor: activeTab === 'patients' ? '#ddd' : '#fff' }}
         >
           Patients
         </button>
-        <button 
+        <button
           onClick={() => setActiveTab('practitioners')}
-          style={{ marginRight: '10px', padding: '10px', backgroundColor: activeTab === 'practitioners' ? '#ddd' : '#fff' }}
+        // style={{ marginRight: '10px', padding: '10px', backgroundColor: activeTab === 'practitioners' ? '#ddd' : '#fff' }}
         >
           Practitioners
         </button>
-        <button 
+        <button
           onClick={() => setActiveTab('appointments')}
-          style={{ padding: '10px', backgroundColor: activeTab === 'appointments' ? '#ddd' : '#fff' }}
+        // style={{ padding: '10px', backgroundColor: activeTab === 'appointments' ? '#ddd' : '#fff' }}
         >
           Appointments
-          </button>
-        <button 
+        </button>
+        <button
           onClick={() => setActiveTab('staff')}
-          style={{ marginRight: '10px' }}
+        // style={{ marginRight: '10px' }}
         >
           Staff
         </button>
@@ -48,8 +52,9 @@ function App() {
           Reports
         </button>
       </nav>
-      
+
       {/* Conditional Rendering Based on Active Tab */}
+      {activeTab === 'home' && <Home />}
       {activeTab === 'patients' && <Patients />}
       {activeTab === 'practitioners' && <PractitionersTab />}
       {activeTab === 'appointments' && <Appointments />}

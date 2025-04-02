@@ -15,7 +15,7 @@ function PhysicianStatement() {
     <div style={{ padding: '20px' }}>
       <h1>Physician Statements for Insurance Forms</h1>
       {statements.length > 0 ? (
-        <table border="1" cellPadding="8" cellSpacing="0">
+        <table align="center" border="1" cellPadding="8" cellSpacing="0">
           <thead>
             <tr>
               <th>Statement ID</th>
