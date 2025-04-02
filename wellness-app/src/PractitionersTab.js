@@ -1,4 +1,3 @@
-// PractitionersTab.js
 import React, { useState, useEffect } from 'react';
 
 function PractitionersTab() {
@@ -16,12 +15,10 @@ function PractitionersTab() {
 
   const baseUrl = 'http://localhost:3000/api/practitioners';
 
-  // Fetch practitioners on component mount
   useEffect(() => {
     fetchPractitioners();
   }, []);
 
-  // Fetch practitioners from the server
   const fetchPractitioners = () => {
     fetch(baseUrl)
       .then(response => {
@@ -34,7 +31,6 @@ function PractitionersTab() {
       .catch(error => console.error(error));
   };
 
-  // Update form state when input changes
   const handleChange = (e) => {
     setFormData(prev => ({
       ...prev,
@@ -42,7 +38,6 @@ function PractitionersTab() {
     }));
   };
 
-  // Handle form submission for create/update
   const handleSubmit = (e) => {
     e.preventDefault();
     if (editing) {
@@ -100,7 +95,6 @@ function PractitionersTab() {
     }
   };
 
-  // Reset form data
   const resetForm = () => {
     setFormData({
       practitioner_id: '',
@@ -113,7 +107,6 @@ function PractitionersTab() {
     });
   };
 
-  // Populate form for editing
   const handleEdit = (practitioner) => {
     setEditing(true);
     setFormData({
@@ -127,7 +120,6 @@ function PractitionersTab() {
     });
   };
 
-  // Delete a practitioner
   const handleDelete = (practitionerId) => {
     if (!window.confirm('Are you sure you want to delete this practitioner?')) return;
     fetch(`${baseUrl}/${practitionerId}`, {
@@ -149,8 +141,6 @@ function PractitionersTab() {
   return (
     <div style={{ padding: '20px' }}>
       <h1>Wellness Clinic - Practitioners</h1>
-      
-      {/* Practitioner Listing */}
       <h2>All Practitioners</h2>
       {practitioners.length > 0 ? (
         <table border="1" cellPadding="8" cellSpacing="0">
@@ -189,10 +179,9 @@ function PractitionersTab() {
       ) : (
         <p>No practitioners found.</p>
       )}
-      
+
       <hr />
-      
-      {/* Form for Create/Update */}
+
       <h2>{editing ? 'Edit Practitioner' : 'Add New Practitioner'}</h2>
       <form onSubmit={handleSubmit}>
         {editing && (

@@ -9,7 +9,7 @@ function Staff() {
     last_name: '',
     role: '',
     phone_num: '',
-    email: '',
+    email: ''
   });
   const [editing, setEditing] = useState(false);
   const baseUrl = 'http://localhost:3000/api/staff';
@@ -68,7 +68,7 @@ function Staff() {
       last_name: '',
       role: '',
       phone_num: '',
-      email: '',
+      email: ''
     });
   };
 
@@ -116,8 +116,12 @@ function Staff() {
                 <td>{member.role}</td>
                 <td>{member.phone_num}</td>
                 <td>{member.email}</td>
-                <td><button onClick={() => handleEdit(member)}>Edit</button></td>
-                <td><button onClick={() => handleDelete(member.staff_id)}>Delete</button></td>
+                <td>
+                  <button onClick={() => handleEdit(member)}>Edit</button>
+                </td>
+                <td>
+                  <button onClick={() => handleDelete(member.staff_id)}>Delete</button>
+                </td>
               </tr>
             ))}
           </tbody>

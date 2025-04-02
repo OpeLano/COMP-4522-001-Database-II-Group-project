@@ -82,12 +82,53 @@ app.delete('/api/patients/:id', (req, res) => {
 // PRACTITIONERS ROUTES
 // =======================
 
-// 1) READ all practitioners (joining practitioners and staff tables)
+// CREATE a new practitioner (insert into staff then practitioners)
+app.post('/api/practitioners', (req, res) => {
+  const { first_name, last_name, phone_num, email, specialization } = req.body;
+
+  // 1) Insert a new Staff record
+  //    Assign a default "role" (like "Practitioner" or "Doctor") if not provided.
+  const staffSql = `
+    INSERT INTO staff (first_name, last_name, role, phone_num, email)
+    VALUES (?, ?, 'Practitioner', ?, ?)
+  `;
+  db.query(staffSql, [first_name, last_name, phone_num, email], (err, staffResult) => {
+    if (err) return res.status(500).json({ error: err.message });
+
+    const newStaffId = staffResult.insertId;
+
+    // 2) Insert into the Practitioners table using the newly created staff_id
+    const practSql = `
+      INSERT INTO practitioners (staff_id, specialization)
+      VALUES (?, ?)
+    `;
+    db.query(practSql, [newStaffId, specialization], (err, practResult) => {
+      if (err) return res.status(500).json({ error: err.message });
+
+      return res.json({
+        message: 'Practitioner created',
+        practitioner_id: practResult.insertId,
+        staff_id: newStaffId
+      });
+    });
+  });
+});
+
+// READ all practitioners
+// Join staff to get first_name, last_name, phone_num, and email
 app.get('/api/practitioners', (req, res) => {
   const sql = `
-    SELECT p.practitioner_id, p.staff_id, s.first_name, s.last_name, s.role, p.specialization, s.phone_num, s.email
+    SELECT
+      p.practitioner_id,
+      p.staff_id,
+      s.first_name,
+      s.last_name,
+      s.role,
+      s.phone_num,
+      s.email,
+      p.specialization
     FROM practitioners p
-    JOIN staff s ON p.staff_id = s.staff_id;
+    JOIN staff s ON p.staff_id = s.staff_id
   `;
   db.query(sql, (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -95,48 +136,21 @@ app.get('/api/practitioners', (req, res) => {
   });
 });
 
-// 2) CREATE a new practitioner (insert into staff then practitioners)
-app.post('/api/practitioners', (req, res) => {
-  const { first_name, last_name, role, phone_num, email, specialization } = req.body;
-  const staffSql = `
-    INSERT INTO staff (first_name, last_name, role, phone_num, email)
-    VALUES (?, ?, ?, ?, ?)
-  `;
-  db.query(staffSql, [first_name, last_name, role, phone_num, email], (err, staffResult) => {
-    if (err) return res.status(500).json({ error: err.message });
-    const staff_id = staffResult.insertId;
-    const practSql = `
-      INSERT INTO practitioners (staff_id, specialization)
-      VALUES (?, ?)
-    `;
-    db.query(practSql, [staff_id, specialization], (err, practResult) => {
-      if (err) return res.status(500).json({ error: err.message });
-      return res.json({ 
-        message: 'Practitioner added', 
-        practitioner_id: practResult.insertId, 
-        staff_id, 
-        first_name, 
-        last_name, 
-        role, 
-        phone_num, 
-        email, 
-        specialization 
-      });
-    });
-  });
-});
-
-// 3) UPDATE an existing practitioner (update both staff and practitioners)
+// UPDATE an existing practitioner (update both staff and practitioners)
 app.put('/api/practitioners/:id', (req, res) => {
-  const { id } = req.params;
-  const { staff_id, first_name, last_name, role, phone_num, email, specialization } = req.body;
+  const { id } = req.params; // practitioner_id
+  const { staff_id, first_name, last_name, phone_num, email, specialization } = req.body;
+
+  // 1) Update the Staff row
   const staffSql = `
     UPDATE staff
-    SET first_name = ?, last_name = ?, role = ?, phone_num = ?, email = ?
+    SET first_name = ?, last_name = ?, phone_num = ?, email = ?
     WHERE staff_id = ?
   `;
-  db.query(staffSql, [first_name, last_name, role, phone_num, email, staff_id], (err, staffResult) => {
+  db.query(staffSql, [first_name, last_name, phone_num, email, staff_id], (err, staffResult) => {
     if (err) return res.status(500).json({ error: err.message });
+
+    // 2) Update the Practitioners row
     const practSql = `
       UPDATE practitioners
       SET specialization = ?
@@ -149,20 +163,25 @@ app.put('/api/practitioners/:id', (req, res) => {
   });
 });
 
-// 4) DELETE a practitioner (delete from practitioners then from staff)
+// DELETE a practitioner (delete from practitioners then staff)
 app.delete('/api/practitioners/:id', (req, res) => {
-  const { id } = req.params;
-  // First, retrieve the staff_id for the given practitioner
+  const { id } = req.params; // practitioner_id
+
+  // 1) Retrieve the staff_id for the given practitioner
   const findSql = `SELECT staff_id FROM practitioners WHERE practitioner_id = ?`;
   db.query(findSql, [id], (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
     if (results.length === 0) return res.status(404).json({ error: 'Practitioner not found' });
+
     const staff_id = results[0].staff_id;
-    // Delete the practitioner record
+
+    // 2) Delete the practitioner record
     const deletePractSql = `DELETE FROM practitioners WHERE practitioner_id = ?`;
     db.query(deletePractSql, [id], (err, deleteResult) => {
       if (err) return res.status(500).json({ error: err.message });
-      // Optionally, delete the associated staff record
+
+      // 3) Optionally, delete the associated staff record
+      //    If you want to keep staff, remove this step.
       const deleteStaffSql = `DELETE FROM staff WHERE staff_id = ?`;
       db.query(deleteStaffSql, [staff_id], (err, staffDeleteResult) => {
         if (err) console.error('Error deleting from staff table:', err);
@@ -314,10 +333,12 @@ app.get('/api/staff', (req, res) => {
 
 // CREATE a new staff member
 app.post('/api/staff', (req, res) => {
-  const { first_name, last_name, role, phone_num, email, category } = req.body;
-  const sql = `INSERT INTO staff (first_name, last_name, role, phone_num, email, category)
-               VALUES (?, ?, ?, ?, ?, ?)`;
-  db.query(sql, [first_name, last_name, role, phone_num, email, category], (err, result) => {
+  const { first_name, last_name, role, phone_num, email } = req.body;
+  const sql = `
+    INSERT INTO staff (first_name, last_name, role, phone_num, email)
+    VALUES (?, ?, ?, ?, ?)
+  `;
+  db.query(sql, [first_name, last_name, role, phone_num, email], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     return res.json({ message: 'Staff member added', insertedId: result.insertId });
   });
@@ -326,10 +347,13 @@ app.post('/api/staff', (req, res) => {
 // UPDATE an existing staff member
 app.put('/api/staff/:id', (req, res) => {
   const { id } = req.params;
-  const { first_name, last_name, role, phone_num, email, category } = req.body;
-  const sql = `UPDATE staff SET first_name = ?, last_name = ?, role = ?, phone_num = ?, email = ?, category = ?
-               WHERE staff_id = ?`;
-  db.query(sql, [first_name, last_name, role, phone_num, email, category, id], (err, result) => {
+  const { first_name, last_name, role, phone_num, email } = req.body;
+  const sql = `
+    UPDATE staff
+    SET first_name = ?, last_name = ?, role = ?, phone_num = ?, email = ?
+    WHERE staff_id = ?
+  `;
+  db.query(sql, [first_name, last_name, role, phone_num, email, id], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Staff member not found' });
     return res.json({ message: 'Staff member updated' });
@@ -402,7 +426,7 @@ app.get('/api/schedules/weekly', (req, res) => {
   const { weekStart } = req.query; // weekStart is expected as the Monday of the week
   const sql = `
     SELECT 
-      s.staff_id, s.first_name, s.last_name, s.role, s.category,
+      s.staff_id, s.first_name, s.last_name, s.role,
       a.appointment_date
     FROM staff s
     LEFT JOIN appointments a ON s.staff_id = a.practitioner_id
